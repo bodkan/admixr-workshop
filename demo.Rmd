@@ -1,10 +1,97 @@
+---
+title: "Data preparation"
+author: "Martin Petr <mp@bodkan.net>"
+date: "3/29/2021"
+output: github_document
+---
+
+# Introduction
+
+Lets load all pre-requisites first. You should first try to install them by running `install.packages(c("admixr", "tidyverse"))`. Note that this make take a long time because there are a lots of C/C++ dependencies which need to be compiled first (on a freshly installed system, this could easily take 20 minutes).
+
+```{r}
 library(admixr)
+library(tidyverse)
+```
 
-snp_data <- eigenstrat("subset")
+## Demo #1
 
-result <- f4(
-  W = c("French", "Dinka"), X = "Yoruba", Y = "Vindija", Z = "Chimp",
-  data = snp_data
+### EIGENSTRAT file format
+
+Let's direct _admixr_ to the location of the EIGENSTRAT trio data files. Note that this doesn't load any data! It just creates "pointers" to where the data files are located on your disk.s
+
+```{r}
+prefix <- file.path(getwd(), "dataset")
+
+data <- eigenstrat(prefix)
+
+data
+```
+
+Each EIGENSTRAT data set has three components: a trio of `ind/snp/geno` files, which can be loaded with `read_*()` functions:
+
+- `ind` file:
+
+```{r}
+ind <- read_ind(data)
+ind
+```
+
+- `snp` file:
+
+```{r}
+snp <- read_snp(data)
+snp
+
+nrow(snp) / 1e6 # how many millions of sites we have genotyped?
+```
+
+- `geno` file:
+
+```{r}
+geno <- read_geno(data)
+geno
+
+geno[, c("Ust_Ishim", "Vindija", "Altai", "Czech", "Chimp")]
+
+table(geno$I0876) # Kostenki-14
+table(geno$Vindija)
+table(geno$Altai)
+table(geno$Dinka)
+```
+
+Every function in _admixr_ works with the EIGENSTRAT trio and the `eigenstrat()` function provided by the package makes this easier by tracking where those files are and keeping them in one place in memory.
+
+## Demo #2
+
+```{r}
+na.omit(geno[, c("Dinka", "Yoruba", "Vindija", "Chimp")])
+```
+
+
+```{r}
+f4_result1 <- f4(
+  W = "Dinka", X = "Yoruba", Y = "Vindija", Z = "Chimp",
+  data = data
 )
 
-result
+f4_result1
+```
+
+
+
+```{r}
+f4_result2 <- f4(
+  W = "Dinka", X = "French", Y = "Vindija", Z = "Chimp",
+  data = data
+)
+
+f4_result2
+```
+
+
+
+```{r}
+x <- na.omit(geno[, c("Dinka", "Yoruba", "Vindija", "Chimp")])
+```
+

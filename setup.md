@@ -57,9 +57,9 @@ emh_keep <-
    .$X
 
 modern_keep <- c(
-  "S_Papuan_1", "S_Papuan_2", "S_Papuan_3", "S_Papuan_4", "S_Papuan_5",
+  "S_Papuan_1",
   "S_Adygei_1", "S_Orcadian_1", "S_Spanish_1", "S_Greek_2", "S_French_1", "S_Russian_1", "S_Icelandic_2", "S_Estonian_1",   "S_Czech_2", "S_Tuscan_1",
-  "S_Han_1", "S_Han_2", "S_Japanese_1", "S_Korean_2", "S_Dai_3", "S_Burmese_2", "S_Tujia_1", "S_Uygur_1", "S_Hezhen_2",
+  "S_Han_1", "S_Japanese_1", "S_Korean_2", "S_Dai_3", "S_Burmese_2", "S_Tujia_1", "S_Uygur_1", "S_Hezhen_2",
   "S_Dinka_1", "S_Mbuti_1", "S_Yoruba_1"
 )
 
@@ -88,9 +88,13 @@ new_geno <- geno[, new_ind$id] %>%
   rename(Vindija = new_Vindija,
          Altai = new_Altai)
 
-new_ind <- mutate(new_ind,
-                  id = str_replace(id, "^new_", ""),
-                  label = str_replace(label, "^new_", ""))
+new_ind <- mutate(
+  new_ind,
+  id = str_replace(id, "^new_", ""),
+  label = str_replace(label, "^new_", "")
+) %>%
+  mutate(id = str_replace("^S_", "", id)) %>%
+  mutate(id = str_replace("-\\d+$", "", id))
 
 write_geno(new_geno, "subset.geno")
 write_ind(new_ind, "subset.ind")
