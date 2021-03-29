@@ -1,27 +1,31 @@
----
-title: "Data preparation"
-output: github_document
----
+Data preparation
+================
 
-This document describes steps to process the gigantic EIGENSTRAT data combining the Reich lab ancient DNA genotypes, SGDP genotypes and Vindija and Altai Neanderthal genomes into a smaller, more manageable EIGENSTRAT data for this course.
+This document describes steps to process the gigantic EIGENSTRAT data
+combining the Reich lab ancient DNA genotypes, SGDP genotypes and
+Vindija and Altai Neanderthal genomes into a smaller, more manageable
+EIGENSTRAT data for this course.
 
-If you participated in this course, you don't need to concern yourselves with this. I used this to generated data for the _admixr_ demonstration and also to have something to share with you, in case you would like to test _admixr_ on your own.
+If you participated in this course, you don’t need to concern yourselves
+with this. I used this to generated data for the *admixr* demonstration
+and also to have something to share with you, in case you would like to
+test *admixr* on your own.
 
-```{r setup, include = F}
-knitr::opts_chunk$set(echo = T, eval = F)
-```
+## Download full EIGENSTRAT data used in [Petr *et al.* (2019)](https://www.pnas.org/content/116/5/1639)
 
-## Download full EIGENSTRAT data used in [Petr _et al._ (2019)](https://www.pnas.org/content/116/5/1639)
+This data is a combination of about 500 samples (ancient and
+present-day) used in a study by [Fu *et al.*
+(2016)](https://www.nature.com/articles/nature17993), as well as Vindija
+and Altai Neanderthal genomes I analyzed in my paper on selection
+against Neanderthal introgression.
 
-This data is a combination of about 500 samples (ancient and present-day) used in a study by [Fu _et al._ (2016)](https://www.nature.com/articles/nature17993), as well as Vindija and Altai Neanderthal genomes I analyzed in my paper on selection against Neanderthal introgression.
-
-```{bash}
+``` bash
 scp bionc04:/mnt/expressions/mp/nea-over-time/data/eigenstrat/bigyri_ho/all.{snp,ind,geno} .
 ```
 
 ## Prepare a table of sample names, ages, and population assignment
 
-```{r}
+``` r
 library(tidyverse)
 
 sgdp <-
@@ -67,7 +71,7 @@ write_tsv(samples, "samples.tsv")
 
 ## Subset the gigantic EIGENSTRAT data to a managable size
 
-```{r}
+``` r
 library(admixr)
 
 all_snps <- eigenstrat("all")
@@ -95,6 +99,6 @@ file.copy(all_snps$snp, "subset.snp")
 
 ## Clean up
 
-```{bash}
+``` bash
 rm all.{geno,ind,snp}
 ```
