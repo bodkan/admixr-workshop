@@ -5,6 +5,11 @@ date: "3/29/2021"
 output: github_document
 ---
 
+```{r setup, include = F}
+knitr::opts_chunk$set(echo = T, eval = T)
+```
+
+
 # Introduction
 
 Lets load all pre-requisites first. You should first try to install them by running `install.packages(c("admixr", "tidyverse"))`. Note that this make take a long time because there are a lots of C/C++ dependencies which need to be compiled first (on a freshly installed system, this could easily take 20 minutes).
@@ -51,16 +56,18 @@ nrow(snp) / 1e6 # how many millions of sites we have genotyped?
 ```{r}
 geno <- read_geno(data)
 geno
+```
 
-geno[, c("Ust_Ishim", "Vindija", "Altai", "Czech", "Chimp")]
+We can see that the only genotypes present are reference and alternative homozygotes. There are no heterozygous sites in our demo data because all genomes have been pseudo-haplodized (at each heterozygous position, a random allele was drawn from the two alleles present). In other cases, allele types 0, 1, and 2 would be present.
 
+```{r}
 table(geno$I0876) # Kostenki-14
 table(geno$Vindija)
-table(geno$Altai)
-table(geno$Dinka)
 ```
 
 Every function in _admixr_ works with the EIGENSTRAT trio and the `eigenstrat()` function provided by the package makes this easier by tracking where those files are and keeping them in one place in memory.
+
+Note: in case you want to generate your own EIGENSTRAT data (from VCF files, etc.) or if you want to somehow process or filter data you already have, functions `write_snp/write_ind/write_geno` can be very useful.
 
 ## Demo #2
 
@@ -90,8 +97,31 @@ f4_result2
 ```
 
 
+## Homebrew $f_4$ statistic (and _D_ statistic)
 
 ```{r}
-x <- na.omit(geno[, c("Dinka", "Yoruba", "Vindija", "Chimp")])
+# subset to only four columns, for brevity
+gt <- geno[, c("Dinka", "Yoruba", "Vindija", "Chimp")]
+
+# detect two kinds of site patterns
+baba <- with(gt, Dinka == Vindija & Yoruba == Chimp & Vindija != Chimp)
+abba <- with(gt, Dinka == Chimp & Yoruba == Vindija & Vindija != Chimp)
+
+# count the two site patterns
+(total_baba <- sum(baba, na.rm = T))
+(total_abba <- sum(abba, na.rm = T))
 ```
 
+D statistic:
+
+```{r}
+(total_baba - total_abba) / (total_baba + total_abba)
+```
+
+$f_4$ statistic:
+
+```{r}
+(total_baba - total_abba) / nrow(na.omit(gt))
+```
+
+Of course, this doesn't give us Z-scores (p-values) and so we can't determine significance (although we could easily add that too) but it servers as a useful demonstration that ADMIXTOOLS, $f$-statistics, _admixr_ and other tools are not black boxes built on high-level techniques. In the end, they all boil down to this kind of calculation.
