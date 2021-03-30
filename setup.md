@@ -93,12 +93,25 @@ new_ind <- mutate(
   id = str_replace(id, "^new_", ""),
   label = str_replace(label, "^new_", "")
 ) %>%
-  mutate(id = str_replace("^S_", "", id)) %>%
-  mutate(id = str_replace("-\\d+$", "", id))
+  mutate(id = str_replace(id, "^S_", "")) %>%
+  mutate(id = str_replace(id, "-\\d+$", ""))
 
-write_geno(new_geno, "subset.geno")
-write_ind(new_ind, "subset.ind")
-file.copy(all_snps$snp, "subset.snp")
+# call random alleles in diploid individuals
+for (s in colnames(new_geno)) {
+  # get the positions of het sites in a given individual
+  het_pos <- !is.na(new_geno[[s]]) & new_geno[[s]] == 1
+
+  if (!any(het_pos, na.rm = T)) next
+
+  # randomly sample hom REF/ALT alleles at het positions
+  new_geno[[s]] <- replace(new_geno[[s]],
+                           het_pos,
+                           2 * rbinom(sum(het_pos, na.rm = T), 1, 0.5)) %>% as.integer
+}
+
+write_geno(new_geno, "dataset.geno")
+write_ind(new_ind, "dataset.ind")
+file.copy(all_snps$snp, "dataset.snp")
 ```
 
 ## Clean up

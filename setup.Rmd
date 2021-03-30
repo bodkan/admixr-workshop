@@ -1,5 +1,5 @@
 ---
-title: "Data preparation"
+title: Data preparation
 output: github_document
 ---
 
@@ -8,7 +8,7 @@ This document describes steps to process the gigantic EIGENSTRAT data combining 
 If you participated in this course, you don't need to concern yourselves with this. I used this to generated data for the _admixr_ demonstration and also to have something to share with you, in case you would like to test _admixr_ on your own.
 
 ```{r setup, include = F}
-knitr::opts_chunk$set(echo = T, eval = T)
+knitr::opts_chunk$set(echo = T, eval = F)
 ```
 
 ## Download full EIGENSTRAT data used in [Petr _et al._ (2019)](https://www.pnas.org/content/116/5/1639)

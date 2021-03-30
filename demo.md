@@ -1,9 +1,7 @@
-Data preparation
+Demo tutorial
 ================
-Martin Petr <mp@bodkan.net>
-3/29/2021
 
-# Introduction
+## Introduction
 
 Lets load all pre-requisites first. You should first try to install them
 by running `install.packages(c("admixr", "tidyverse"))`. Note that this
@@ -29,7 +27,7 @@ library(tidyverse)
 
 ## Demo \#1
 
-### EIGENSTRAT file format
+#### EIGENSTRAT file format
 
 Let’s direct *admixr* to the location of the EIGENSTRAT trio data files.
 Note that this doesn’t load any data! It just creates “pointers” to
@@ -153,7 +151,7 @@ table(geno$Vindija)
 
     ## 
     ##       0       2 
-    ##  597611 1361685
+    ##  597596 1361700
 
 Every function in *admixr* works with the EIGENSTRAT trio and the
 `eigenstrat()` function provided by the package makes this easier by
@@ -174,14 +172,14 @@ na.omit(geno[, c("Dinka", "Yoruba", "Vindija", "Chimp")])
     ##    Dinka Yoruba Vindija Chimp
     ##    <int>  <int>   <int> <int>
     ##  1     2      2       2     2
-    ##  2     2      2       2     0
+    ##  2     2      0       2     0
     ##  3     2      0       2     2
     ##  4     2      2       0     0
     ##  5     2      2       2     2
     ##  6     2      2       2     2
     ##  7     2      0       2     2
     ##  8     0      0       0     2
-    ##  9     0      2       2     2
+    ##  9     0      0       2     2
     ## 10     2      0       2     2
     ## # … with 1,897,854 more rows
 
@@ -197,7 +195,7 @@ f4_result1
     ## # A tibble: 1 x 10
     ##   W     X      Y       Z            f4   stderr Zscore  BABA  ABBA   nsnps
     ##   <chr> <chr>  <chr>   <chr>     <dbl>    <dbl>  <dbl> <dbl> <dbl>   <dbl>
-    ## 1 Dinka Yoruba Vindija Chimp -0.000042 0.000285 -0.148 56627 56707 1897864
+    ## 1 Dinka Yoruba Vindija Chimp -0.000438 0.000281  -1.56 56211 57043 1897864
 
 ``` r
 f4_result2 <- f4(
@@ -211,9 +209,9 @@ f4_result2
     ## # A tibble: 1 x 10
     ##   W     X      Y       Z           f4   stderr Zscore  BABA  ABBA   nsnps
     ##   <chr> <chr>  <chr>   <chr>    <dbl>    <dbl>  <dbl> <dbl> <dbl>   <dbl>
-    ## 1 Dinka French Vindija Chimp -0.00227 0.000315  -7.20 55518 59827 1898330
+    ## 1 Dinka French Vindija Chimp -0.00220 0.000319  -6.87 55638 59805 1898330
 
-## Homebrew *f*<sub>4</sub> statistic (and *D* statistic)
+### Homebrew *f*<sub>4</sub> statistic (and *D* statistic)
 
 ``` r
 # subset to only four columns, for brevity
@@ -227,13 +225,13 @@ abba <- with(gt, Dinka == Chimp & Yoruba == Vindija & Vindija != Chimp)
 (total_baba <- sum(baba, na.rm = T))
 ```
 
-    ## [1] 56627
+    ## [1] 56211
 
 ``` r
 (total_abba <- sum(abba, na.rm = T))
 ```
 
-    ## [1] 56707
+    ## [1] 57043
 
 D statistic:
 
@@ -241,7 +239,7 @@ D statistic:
 (total_baba - total_abba) / (total_baba + total_abba)
 ```
 
-    ## [1] -0.0007058782
+    ## [1] -0.007346319
 
 *f*<sub>4</sub> statistic:
 
@@ -249,10 +247,12 @@ D statistic:
 (total_baba - total_abba) / nrow(na.omit(gt))
 ```
 
-    ## [1] -4.215265e-05
+    ## [1] -0.0004383876
 
 Of course, this doesn’t give us Z-scores (p-values) and so we can’t
 determine significance (although we could easily add that too) but it
 servers as a useful demonstration that ADMIXTOOLS, *f*-statistics,
 *admixr* and other tools are not black boxes built on high-level
 techniques. In the end, they all boil down to this kind of calculation.
+
+## Demo \#3 - *f*<sub>4</sub>-ratio statistic
