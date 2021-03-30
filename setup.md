@@ -1,30 +1,47 @@
----
-title: Data preparation
-output: github_document
----
+Data preparation
+================
 
-This document describes steps to process the gigantic EIGENSTRAT data combining the Reich lab ancient DNA genotypes, SGDP genotypes and Vindija and Altai Neanderthal genomes into a smaller, more manageable EIGENSTRAT data for this course.
+This document describes steps to process the gigantic EIGENSTRAT data
+combining the Reich lab ancient DNA genotypes, SGDP genotypes and
+Vindija and Altai Neanderthal genomes into a smaller, more manageable
+EIGENSTRAT data for this course.
 
-If you participated in this course, you don't need to concern yourselves with this. I used this to generated data for the _admixr_ demonstration and also to have something to share with you, in case you would like to test _admixr_ on your own.
+If you participated in this course, you don’t need to concern yourselves
+with this. I used this to generated data for the *admixr* demonstration
+and also to have something to share with you, in case you would like to
+test *admixr* on your own.
 
-```{r setup, include = F}
-knitr::opts_chunk$set(echo = T, eval = T)
-```
+## Download full EIGENSTRAT data used in [Petr *et al.* (2019)](https://www.pnas.org/content/116/5/1639)
 
-## Download full EIGENSTRAT data used in [Petr _et al._ (2019)](https://www.pnas.org/content/116/5/1639)
+This data is a combination of about 500 samples (ancient and
+present-day) used in a study by [Fu *et al.*
+(2016)](https://www.nature.com/articles/nature17993), as well as Vindija
+and Altai Neanderthal genomes I analyzed in my paper on selection
+against Neanderthal introgression.
 
-This data is a combination of about 500 samples (ancient and present-day) used in a study by [Fu _et al._ (2016)](https://www.nature.com/articles/nature17993), as well as Vindija and Altai Neanderthal genomes I analyzed in my paper on selection against Neanderthal introgression.
-
-```{bash}
+``` bash
 mkdir data/
 scp bionc04:/mnt/expressions/mp/nea-over-time/data/eigenstrat/bigyri_ho/all.{snp,ind,geno} data/
 ```
 
 ## Prepare a table of sample names, ages, and population assignment
 
-```{r}
+``` r
 library(tidyverse)
+```
 
+    ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──
+
+    ## ✓ ggplot2 3.3.3     ✓ purrr   0.3.4
+    ## ✓ tibble  3.1.0     ✓ dplyr   1.0.2
+    ## ✓ tidyr   1.1.2     ✓ stringr 1.4.0
+    ## ✓ readr   1.4.0     ✓ forcats 0.5.0
+
+    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+    ## x dplyr::filter() masks stats::filter()
+    ## x dplyr::lag()    masks stats::lag()
+
+``` r
 sgdp <-
   read_tsv(url("http://simonsfoundation.s3.amazonaws.com/share/SCDA/datasets/10_24_2014_SGDP_metainformation_update.txt")) %>%
   select(Panel, name=SGDP_ID, Region, Country, Latitude, Longitude) %>%
@@ -37,7 +54,31 @@ sgdp <-
   group_by(name, age, pop) %>%
   ungroup %>%
   select(-Latitude, -Longitude)
+```
 
+    ## Warning: Missing column names filled in: 'X12' [12], 'X13' [13], 'X14' [14],
+    ## 'X15' [15], 'X16' [16], 'X17' [17], 'X18' [18], 'X19' [19], 'X20' [20],
+    ## 'X21' [21], 'X22' [22], 'X23' [23], 'X24' [24]
+
+    ## 
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## cols(
+    ##   .default = col_logical(),
+    ##   Panel = col_character(),
+    ##   SGDP_ID = col_character(),
+    ##   Population_ID = col_character(),
+    ##   Region = col_character(),
+    ##   Country = col_character(),
+    ##   Contributor = col_character(),
+    ##   Gender = col_character(),
+    ##   Latitude = col_double(),
+    ##   Longitude = col_double(),
+    ##   Coverage = col_double(),
+    ##   HetRateAuto = col_double()
+    ## )
+    ## ℹ Use `spec()` for the full column specifications.
+
+``` r
 emhs <-
   read_delim(url("https://raw.githubusercontent.com/bodkan/nea-over-time/master/data/emh_ages.txt"), delim=" ", col_names=c("name", "age")) %>%
   mutate(pop="EMH") %>%
@@ -47,7 +88,16 @@ emhs <-
     name == "Loschbour" ~ "new_Loschbour",
     TRUE ~ name
   ))
+```
 
+    ## 
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## cols(
+    ##   name = col_character(),
+    ##   age = col_double()
+    ## )
+
+``` r
 emh_keep <-
   readRDS(url("https://github.com/bodkan/nea-over-time/raw/master/data/rds/nea_estimates.rds")) %>%
   filter(stat == "direct_f4", snp_count >= 200000, pop == "EMH", sites == "all", C == "Yoruba") %>%
@@ -68,7 +118,7 @@ write_tsv(samples, "samples.tsv")
 
 ## Subset the gigantic EIGENSTRAT data to a managable size
 
-```{r}
+``` r
 library(admixr)
 
 all_snps <- eigenstrat("data/all")
@@ -111,8 +161,10 @@ write_ind(new_ind, "data/snps.ind")
 file.copy(all_snps$snp, "data/snps.snp")
 ```
 
+    ## [1] TRUE
+
 ## Clean up
 
-```{bash}
+``` bash
 rm data/all.{geno,ind,snp}
 ```
