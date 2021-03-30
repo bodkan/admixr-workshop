@@ -60,8 +60,11 @@ modern_keep <- c(
   "S_Dinka_1", "S_Mbuti_1", "S_Yoruba_1"
 )
 
+# save a combined table of EMH and present-day samples with clean names
 samples <- bind_rows(emhs, sgdp) %>%
-  filter(name %in% c(emh_keep, modern_keep))
+  filter(name %in% c(emh_keep, modern_keep)) %>%
+  mutate(name = str_replace_all(name, "^S_", "")) %>%
+  mutate(name = str_replace_all(name, "_\\d+$", ""))
 
 write_tsv(samples, "data/samples.tsv")
 ```
