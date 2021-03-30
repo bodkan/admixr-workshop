@@ -76,7 +76,7 @@ ind <- read_ind(data)
 ind
 ```
 
-    ## # A tibble: 46 x 3
+    ## # A tibble: 47 x 3
     ##    id           sex   label        
     ##    <chr>        <chr> <chr>        
     ##  1 Bichon       M     Bichon       
@@ -89,13 +89,13 @@ ind
     ##  8 I0869.damage F     Ostuni1      
     ##  9 I0907.damage F     ElMiron      
     ## 10 I9050.damage F     AfontovaGora3
-    ## # … with 36 more rows
+    ## # … with 37 more rows
 
 ``` r
 nrow(ind)
 ```
 
-    ## [1] 46
+    ## [1] 47
 
 -   `snp` file:
 
@@ -132,7 +132,7 @@ geno <- read_geno(data)
 geno
 ```
 
-    ## # A tibble: 2,144,502 x 46
+    ## # A tibble: 2,144,502 x 47
     ##    Bichon   KK1  SATP Motala12 I9030 I0062 I0876 I0869.damage I0907.damage
     ##     <int> <int> <int>    <int> <int> <int> <int>        <int>        <int>
     ##  1      0     0     0        0    NA    NA    NA           NA           NA
@@ -145,12 +145,12 @@ geno
     ##  8      2     2     2        2    NA     0     2           NA            0
     ##  9      2     2     2        2    NA    NA     0           NA           NA
     ## 10      2     2    NA        2     2    NA     0           NA           NA
-    ## # … with 2,144,492 more rows, and 37 more variables: I9050.damage <int>,
+    ## # … with 2,144,492 more rows, and 38 more variables: I9050.damage <int>,
     ## #   Ranchot.damage <int>, Q116 <int>, Rochedane <int>, I1577 <int>, MA1 <int>,
     ## #   KO1 <int>, LaBrana1 <int>, I0061 <int>, Loschbour <int>, Ust_Ishim <int>,
     ## #   Stuttgart <int>, Estonian <int>, Mbuti <int>, Korean <int>, Yoruba <int>,
-    ## #   Hezhen <int>, Orcadian <int>, Japanese <int>, Tujia <int>, Greek <int>,
-    ## #   Russian <int>, Dai <int>, Han <int>, Dinka <int>, Czech <int>,
+    ## #   Hezhen <int>, Orcadian <int>, Japanese <int>, Saharawi <int>, Tujia <int>,
+    ## #   Greek <int>, Russian <int>, Dai <int>, Han <int>, Dinka <int>, Czech <int>,
     ## #   Icelandic <int>, Uygur <int>, Burmese <int>, Tuscan <int>, Papuan <int>,
     ## #   Spanish <int>, Adygei <int>, French <int>, Chimp <int>, Vindija <int>,
     ## #   Altai <int>
@@ -178,7 +178,7 @@ table(geno$Vindija)
 
     ## 
     ##       0       2 
-    ##  597378 1361918
+    ##  597504 1361792
 
 Note: in case you want to generate your own EIGENSTRAT data (from VCF
 files, etc.) or if you want to somehow process or filter data you
@@ -204,7 +204,7 @@ f4_afr
     ## # A tibble: 1 x 10
     ##   W      X     Y       Z           f4   stderr Zscore  BABA  ABBA   nsnps
     ##   <chr>  <chr> <chr>   <chr>    <dbl>    <dbl>  <dbl> <dbl> <dbl>   <dbl>
-    ## 1 Yoruba Dinka Vindija Chimp 0.000209 0.000285  0.735 56894 56497 1897864
+    ## 1 Yoruba Dinka Vindija Chimp 0.000422 0.000283   1.49 56947 56147 1897864
 
 The explicit argument names are not mandatory, but I personally *always*
 use them. For the right order of arguments, check out `?f4` and other
@@ -231,7 +231,7 @@ d_afr
     ## # A tibble: 1 x 10
     ##   W      X     Y       Z          D  stderr Zscore  BABA  ABBA   nsnps
     ##   <chr>  <chr> <chr>   <chr>  <dbl>   <dbl>  <dbl> <dbl> <dbl>   <dbl>
-    ## 1 Yoruba Dinka Vindija Chimp 0.0035 0.00476  0.735 56894 56497 1897864
+    ## 1 Yoruba Dinka Vindija Chimp 0.0071 0.00474   1.49 56947 56147 1897864
 
 Now *f4(Dinka, French; Neanderthal, Chimp)*:
 
@@ -243,7 +243,7 @@ f4_eur
     ## # A tibble: 1 x 10
     ##   W      X      Y       Z           f4   stderr Zscore  BABA  ABBA   nsnps
     ##   <chr>  <chr>  <chr>   <chr>    <dbl>    <dbl>  <dbl> <dbl> <dbl>   <dbl>
-    ## 1 Yoruba French Vindija Chimp -0.00177 0.000326  -5.42 57873 61232 1898093
+    ## 1 Yoruba French Vindija Chimp -0.00179 0.000326  -5.51 57797 61201 1898093
 
 We don’t have to run the test for each population at a time, but we can
 give a vector of sample/population names as an input:
@@ -258,12 +258,12 @@ f4_multiple
     ## # A tibble: 6 x 10
     ##   W      X      Y       Z            f4   stderr Zscore  BABA  ABBA   nsnps
     ##   <chr>  <chr>  <chr>   <chr>     <dbl>    <dbl>  <dbl> <dbl> <dbl>   <dbl>
-    ## 1 Yoruba French Vindija Chimp -0.00177  0.000326 -5.42  57873 61232 1898093
-    ## 2 Yoruba Czech  Vindija Chimp -0.00197  0.000315 -6.26  57502 61243 1898222
-    ## 3 Yoruba Han    Vindija Chimp -0.00160  0.000335 -4.78  58431 61476 1898388
-    ## 4 Yoruba Papuan Vindija Chimp -0.00289  0.000349 -8.28  57463 62944 1897946
-    ## 5 Yoruba Mbuti  Vindija Chimp  0.000412 0.000281  1.46  59401 58620 1897659
-    ## 6 Yoruba Dinka  Vindija Chimp  0.000209 0.000285  0.735 56894 56497 1897864
+    ## 1 Yoruba French Vindija Chimp -0.00179  0.000326 -5.51  57797 61201 1898093
+    ## 2 Yoruba Czech  Vindija Chimp -0.00196  0.000311 -6.29  57406 61123 1898222
+    ## 3 Yoruba Han    Vindija Chimp -0.00187  0.000324 -5.76  58057 61605 1898388
+    ## 4 Yoruba Papuan Vindija Chimp -0.00274  0.00035  -7.82  57549 62747 1897946
+    ## 5 Yoruba Mbuti  Vindija Chimp  0.000211 0.000287  0.734 59183 58783 1897659
+    ## 6 Yoruba Dinka  Vindija Chimp  0.000422 0.000283  1.49  56947 56147 1897864
 
 When we plot the results, we immediately see a pattern:
 
@@ -291,13 +291,13 @@ abba <- with(gt,    Yoruba == Chimp & Dinka == Vindija      & Vindija != Chimp)
 (total_baba <- sum(baba, na.rm = T))
 ```
 
-    ## [1] 56894
+    ## [1] 56947
 
 ``` r
 (total_abba <- sum(abba, na.rm = T))
 ```
 
-    ## [1] 56497
+    ## [1] 56147
 
 *f*<sub>4</sub> statistic:
 
@@ -305,7 +305,7 @@ abba <- with(gt,    Yoruba == Chimp & Dinka == Vindija      & Vindija != Chimp)
 (total_baba - total_abba) / nrow(gt)
 ```
 
-    ## [1] 0.0002091825
+    ## [1] 0.0004215265
 
 D statistic:
 
@@ -313,7 +313,7 @@ D statistic:
 (total_baba - total_abba) / (total_baba + total_abba)
 ```
 
-    ## [1] 0.00350116
+    ## [1] 0.007073762
 
 We can compare these to the result of `f4_afr` and `d_afr`.
 
@@ -329,31 +329,31 @@ To calculate admixture proportion, *admixr* has a function called
 `f4ratio()`:
 
 ``` r
-neand_one <- f4ratio(X = "French", A = "Altai", B = "Vindija", C = "Dinka", O = "Chimp", data = data)
+neand_one <- f4ratio(X = "French", A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp", data = data)
 
 neand_one
 ```
 
     ## # A tibble: 1 x 8
-    ##   A     B       X      C     O      alpha  stderr Zscore
-    ##   <chr> <chr>   <chr>  <chr> <chr>  <dbl>   <dbl>  <dbl>
-    ## 1 Altai Vindija French Dinka Chimp 0.0218 0.00379   5.75
+    ##   A     B       X      C      O      alpha  stderr Zscore
+    ##   <chr> <chr>   <chr>  <chr>  <chr>  <dbl>   <dbl>  <dbl>
+    ## 1 Altai Vindija French Yoruba Chimp 0.0186 0.00410   4.54
 
 We can see that the proportion of Neanderthal ancestry in a French
-individual is about `{r} sprintf("%.1f", neand_one$alpha * 100)`% (the
-column `alpha` in the table above). Again, we can reproduce the same
-calculation “manually”, by estimating the individual components
-ourselves and taking the ratio. This is obviously inefficient, but it’s
-good to keep in mind that there’s no magic behind the scenes:
+individual is about 1.9% (the column `alpha` in the table above). Again,
+we can reproduce the same calculation “manually”, by estimating the
+individual components ourselves and taking the ratio. This is obviously
+inefficient, but it’s good to keep in mind that there’s no magic behind
+the scenes:
 
 ``` r
-numerator <- f4(W = "Dinka", X = "French", Y = "Altai", Z = "Chimp", data = data)
-denominator <- f4(W = "Dinka", X = "Vindija", Y = "Altai", Z = "Chimp", data = data)
+numerator <- f4(W = "Yoruba", X = "French", Y = "Altai", Z = "Chimp", data = data)
+denominator <- f4(W = "Yoruba", X = "Vindija", Y = "Altai", Z = "Chimp", data = data)
 
 numerator$f4 / denominator$f4
 ```
 
-    ## [1] 0.02177059
+    ## [1] 0.01867924
 
 This is a method for estimating Neanderthal ancestry proportion
 sometimes called “direct *f*<sub>4</sub>-ratio” based on [Petr *et al.*
@@ -370,19 +370,19 @@ the statistic using the order of the populations from the Petr *et al.*
 (2019) paper:
 
 ``` r
-x <- f4(W = "Altai", X = "Chimp", Y = "French", Z = "Dinka", data = data)
-y <- f4(W = "Altai", X = "Chimp", Y = "Vindija", Z = "Dinka", data = data)
+x <- f4(W = "Altai", X = "Chimp", Y = "French", Z = "Yoruba", data = data)
+y <- f4(W = "Altai", X = "Chimp", Y = "Vindija", Z = "Yoruba", data = data)
 
 x$f4 / y$f4 # this is same as this ...
 ```
 
-    ## [1] 0.02177059
+    ## [1] 0.01867924
 
 ``` r
 numerator$f4 / denominator$f4 # ... from the previous example
 ```
 
-    ## [1] 0.02177059
+    ## [1] 0.01867924
 
 The fact that many “different” *f*<sub>4</sub> and *D*-statistics mean
 actually the same thing sometimes make reading papers extremely
@@ -411,25 +411,24 @@ Now we can estimate the proportion of Neanderthal ancestry in all
 samples at once:
 
 ``` r
-neand_all <- f4ratio(X = samples$name, A = "Altai", B = "Vindija", C = "Dinka", O = "Chimp", data = data)
-
+neand_all <- f4ratio(X = samples$name, A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp", data = data)
 neand_all
 ```
 
-    ## # A tibble: 41 x 8
-    ##    A     B       X             C     O      alpha  stderr Zscore
-    ##    <chr> <chr>   <chr>         <chr> <chr>  <dbl>   <dbl>  <dbl>
-    ##  1 Altai Vindija Kostenki14    Dinka Chimp 0.0203 0.00448   4.53
-    ##  2 Altai Vindija GoyetQ116-1   Dinka Chimp 0.0267 0.00514   5.2 
-    ##  3 Altai Vindija KremsWA3      Dinka Chimp 0.0273 0.00777   3.51
-    ##  4 Altai Vindija Vestonice16   Dinka Chimp 0.0163 0.00514   3.17
-    ##  5 Altai Vindija Ostuni1       Dinka Chimp 0.0155 0.00653   2.38
-    ##  6 Altai Vindija Malta1        Dinka Chimp 0.0267 0.00450   5.94
-    ##  7 Altai Vindija ElMiron       Dinka Chimp 0.0233 0.00522   4.46
-    ##  8 Altai Vindija AfontovaGora3 Dinka Chimp 0.0157 0.00750   2.09
-    ##  9 Altai Vindija Villabruna    Dinka Chimp 0.0183 0.00487   3.76
-    ## 10 Altai Vindija Bichon        Dinka Chimp 0.0213 0.00425   5.01
-    ## # … with 31 more rows
+    ## # A tibble: 44 x 8
+    ##    A     B       X             C      O      alpha  stderr Zscore
+    ##    <chr> <chr>   <chr>         <chr>  <chr>  <dbl>   <dbl>  <dbl>
+    ##  1 Altai Vindija UstIshim      Yoruba Chimp 0.0208 0.00446   4.65
+    ##  2 Altai Vindija Kostenki14    Yoruba Chimp 0.0195 0.00434   4.50
+    ##  3 Altai Vindija GoyetQ116-1   Yoruba Chimp 0.0312 0.00510   6.11
+    ##  4 Altai Vindija KremsWA3      Yoruba Chimp 0.0179 0.00840   2.13
+    ##  5 Altai Vindija Vestonice16   Yoruba Chimp 0.0210 0.00498   4.22
+    ##  6 Altai Vindija Ostuni1       Yoruba Chimp 0.0163 0.00659   2.48
+    ##  7 Altai Vindija Malta1        Yoruba Chimp 0.0256 0.0045    5.69
+    ##  8 Altai Vindija ElMiron       Yoruba Chimp 0.0242 0.00533   4.54
+    ##  9 Altai Vindija AfontovaGora3 Yoruba Chimp 0.0192 0.00740   2.60
+    ## 10 Altai Vindija Villabruna    Yoruba Chimp 0.0200 0.00467   4.27
+    ## # … with 34 more rows
 
 Let’s combine the table of Neanderthal ancestry proportions with our
 annotation table of population assignments and radiocarbon ages:
@@ -439,13 +438,13 @@ combined <- inner_join(neand_all, samples, by = c("X" = "name"))
 ```
 
 What does the trajectory of Neanderthal ancestry in Europe over the last
-40 thousand years look like?
+\~50 thousand years look like?
 
 ``` r
 filter(combined, pop %in% c("EMH", "WestEurasia")) %>% # keep only relevant samples
   ggplot(aes(age, alpha * 100)) +
   geom_point() +
-  ylim(0, 5) + xlim(40000, 0) +
+  ylim(0, 5) + xlim(48000, 0) +
   labs(title = "Trajectory of Neanderthal ancestry in Europe over time",
        x = "years before present", y = "proportion of Neanderthal ancestry [%]") +
   geom_smooth(method = "lm") # add a linear regression fit
@@ -456,7 +455,7 @@ filter(combined, pop %in% c("EMH", "WestEurasia")) %>% # keep only relevant samp
 ![](demo_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 Are there differences in the amounts of Neanderthal ancestry between
-present-day populaions?
+present-day populations?
 
 ``` r
 filter(combined, age == 0) %>%
@@ -464,12 +463,12 @@ filter(combined, age == 0) %>%
   geom_boxplot() +
   geom_jitter() +
   ylim(0, 5) +
-  labs(title = "Neanderthal ancestry in people today",
+  labs(title = "Neanderthal ancestry in present-day populations",
        x = "", y = "proportion of Neanderthal ancestry [%]")
 ```
 
-    ## Warning: Removed 1 rows containing non-finite values (stat_boxplot).
+    ## Warning: Removed 2 rows containing non-finite values (stat_boxplot).
 
-    ## Warning: Removed 2 rows containing missing values (geom_point).
+    ## Warning: Removed 3 rows containing missing values (geom_point).
 
 ![](demo_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->

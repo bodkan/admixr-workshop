@@ -191,7 +191,7 @@ Of course, this doesn't give us Z-scores (p-values) and so we can't determine si
 To calculate admixture proportion, _admixr_ has a function called `f4ratio()`:
 
 ```{r}
-neand_one <- f4ratio(X = "French", A = "Altai", B = "Vindija", C = "Dinka", O = "Chimp", data = data)
+neand_one <- f4ratio(X = "French", A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp", data = data)
 
 neand_one
 ```
@@ -200,8 +200,8 @@ We can see that the proportion of Neanderthal ancestry in a French individual is
 Again, we can reproduce the same calculation "manually", by estimating the individual components ourselves and taking the ratio. This is obviously inefficient, but it's good to keep in mind that there's no magic behind the scenes:
 
 ```{r}
-numerator <- f4(W = "Dinka", X = "French", Y = "Altai", Z = "Chimp", data = data)
-denominator <- f4(W = "Dinka", X = "Vindija", Y = "Altai", Z = "Chimp", data = data)
+numerator <- f4(W = "Yoruba", X = "French", Y = "Altai", Z = "Chimp", data = data)
+denominator <- f4(W = "Yoruba", X = "Vindija", Y = "Altai", Z = "Chimp", data = data)
 
 numerator$f4 / denominator$f4
 ```
@@ -211,8 +211,8 @@ This is a method for estimating Neanderthal ancestry proportion sometimes called
 You can see for yourself that due to the symmetries of the four population quartets, we still get the same result even when we calculate the statistic using the order of the populations from the Petr _et al._ (2019) paper:
 
 ```{r}
-x <- f4(W = "Altai", X = "Chimp", Y = "French", Z = "Dinka", data = data)
-y <- f4(W = "Altai", X = "Chimp", Y = "Vindija", Z = "Dinka", data = data)
+x <- f4(W = "Altai", X = "Chimp", Y = "French", Z = "Yoruba", data = data)
+y <- f4(W = "Altai", X = "Chimp", Y = "Vindija", Z = "Yoruba", data = data)
 
 x$f4 / y$f4 # this is same as this ...
 numerator$f4 / denominator$f4 # ... from the previous example
@@ -232,8 +232,7 @@ samples <- read_tsv("data/samples.tsv")
 Now we can estimate the proportion of Neanderthal ancestry in all samples at once:
 
 ```{r}
-neand_all <- f4ratio(X = samples$name, A = "Altai", B = "Vindija", C = "Dinka", O = "Chimp", data = data)
-
+neand_all <- f4ratio(X = samples$name, A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp", data = data)
 neand_all
 ```
 
@@ -243,19 +242,19 @@ Let's combine the table of Neanderthal ancestry proportions with our annotation 
 combined <- inner_join(neand_all, samples, by = c("X" = "name"))
 ```
 
-What does the trajectory of Neanderthal ancestry in Europe over the last 40 thousand years look like?
+What does the trajectory of Neanderthal ancestry in Europe over the last ~50 thousand years look like?
 
 ```{r}
 filter(combined, pop %in% c("EMH", "WestEurasia")) %>% # keep only relevant samples
   ggplot(aes(age, alpha * 100)) +
   geom_point() +
-  ylim(0, 5) + xlim(40000, 0) +
+  ylim(0, 5) + xlim(48000, 0) +
   labs(title = "Trajectory of Neanderthal ancestry in Europe over time",
        x = "years before present", y = "proportion of Neanderthal ancestry [%]") +
   geom_smooth(method = "lm") # add a linear regression fit
 ```
 
-Are there differences in the amounts of Neanderthal ancestry between present-day populaions?
+Are there differences in the amounts of Neanderthal ancestry between present-day populations?
 
 ```{r}
 filter(combined, age == 0) %>%
