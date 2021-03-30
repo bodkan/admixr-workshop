@@ -82,12 +82,7 @@ sgdp <-
 emhs <-
   read_delim(url("https://raw.githubusercontent.com/bodkan/nea-over-time/master/data/emh_ages.txt"), delim=" ", col_names=c("name", "age")) %>%
   mutate(pop="EMH") %>%
-  filter(name != "Oase1") %>%
-  mutate(name = case_when(
-    name == "UstIshim" ~ "new_UstIshim",
-    name == "Loschbour" ~ "new_Loschbour",
-    TRUE ~ name
-  ))
+  filter(name != "Oase1")
 ```
 
     ## 
@@ -107,7 +102,7 @@ modern_keep <- c(
   "S_Papuan_1",
   "S_Adygei_1", "S_Orcadian_1", "S_Spanish_1", "S_Greek_2", "S_French_1", "S_Russian_1", "S_Icelandic_2", "S_Estonian_1",   "S_Czech_2", "S_Tuscan_1",
   "S_Han_1", "S_Japanese_1", "S_Korean_2", "S_Dai_3", "S_Burmese_2", "S_Tujia_1", "S_Uygur_1", "S_Hezhen_2",
-  "S_Dinka_1", "S_Mbuti_1", "S_Yoruba_1"
+  "S_Dinka_1", "S_Mbuti_1", "S_Yoruba_1", "S_Saharawi_1"
 )
 
 # save a combined table of EMH and present-day samples with clean names
