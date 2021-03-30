@@ -8,36 +8,57 @@ knitr::opts_chunk$set(echo = T, eval = T)
 ```
 
 
+
+
+
+
+
+
+
+
 ## Introduction
 
-Lets load all pre-requisites first. You should first try to install them by running `install.packages(c("admixr", "tidyverse"))`. Note that this make take a long time because there are a lots of C/C++ dependencies which need to be compiled first (on a freshly installed system, this could easily take 20 minutes).
+Lets load all pre-requisites first. You should first install them by running `install.packages(c("admixr", "tidyverse"))`. Note that this make take a long time because there are a lots of C/C++ dependencies which need to be compiled (on a freshly installed system, this could easily take 20 minutes).
 
 ```{r}
 library(admixr)
 library(tidyverse)
 ```
 
+
+
 ## Demo #1
+
+
+
+Let's get the technicalities out of the way first:
+
+1. What does the _admixr_ R package actually do compared to ADMIXTOOLS?
+
+See the [tutorial](https://bodkan.net/admixr/articles/tutorial.html) for a lengthy discussion on this topic. Briefly, it makes it possible to do almost everything that ADMIXTOOLS (I would even say 100% of things an average popgen paper needs) using a set of simple R functions, _entirely from within R_. No shell scripting, no manual editing of files and copy-pasting results from the terminal elsewhere for further processing and plotting...
+
+2. What is the required file format?
+
+
 
 #### EIGENSTRAT file format
 
-Let's direct _admixr_ to the location of the EIGENSTRAT trio data files. Note that this doesn't load any data! It just creates "pointers" to where the data files are located on your disk.s
+Let's direct _admixr_ to the location of the EIGENSTRAT trio data files. Note that this doesn't load any data into R! It just creates "pointers" to where the data files are located on your disk and collects this information in a single R object called `data`. This object is used as input for all _admixr_ function we will use here (and also many others described in the [tutorial](https://bodkan.net/admixr/articles/tutorial.html) and [reference manual](https://bodkan.net/admixr/reference)).
 
 ```{r}
-prefix <- file.path(getwd(), "dataset")
-
-data <- eigenstrat(prefix)
-
+data <- eigenstrat("data/snps")
 data
 ```
 
-Each EIGENSTRAT data set has three components: a trio of `ind/snp/geno` files, which can be loaded with `read_*()` functions:
+Each EIGENSTRAT data set has three components: a trio of `ind/snp/geno` files, which can be loaded with `read_*()` functions. These are not used very often, but are _very_ useful for filtering, processing data, troubleshooting, etc.
 
 - `ind` file:
 
 ```{r}
 ind <- read_ind(data)
 ind
+
+nrow(ind)
 ```
 
 - `snp` file:
@@ -56,58 +77,98 @@ geno <- read_geno(data)
 geno
 ```
 
-We can see that the only genotypes present are reference and alternative homozygotes. There are no heterozygous sites in our demo data because all genomes have been pseudo-haplodized (at each heterozygous position, a random allele was drawn from the two alleles present). In other cases, allele types 0, 1, and 2 would be present.
+We can see that the only genotypes present are reference and alternative homozygotes (values 2 and 0, respectively - note the difference from VCF format 🙄).
+
+There are no heterozygous sites in our demo data because all genomes have been pseudo-haplodized (a random allele was drawn at each heterozygous position). In other cases, allele types 0, 1, and 2 would be present.
 
 ```{r}
 table(geno$I0876) # Kostenki-14
 table(geno$Vindija)
 ```
 
-Every function in _admixr_ works with the EIGENSTRAT trio and the `eigenstrat()` function provided by the package makes this easier by tracking where those files are and keeping them in one place in memory.
-
 Note: in case you want to generate your own EIGENSTRAT data (from VCF files, etc.) or if you want to somehow process or filter data you already have, functions `write_snp/write_ind/write_geno` can be very useful.
+
+
 
 ## Demo #2
 
+
+
+1. Performing admixture tests with $f_4$ and _D_ statistics using _admixr_
+
+2. Opening the black box - calculating admixture test "manually"
+
+
+
+### 1. $f_4$ and _D_ statistics using _admixr_
+
+Let's first test _f4(Dinka, Yoruba; Neanderthal, Chimp)_:
+
 ```{r}
-na.omit(geno[, c("Dinka", "Yoruba", "Vindija", "Chimp")])
+f4_afr <- f4(W = "Yoruba", X = "Dinka", Y = "Vindija", Z = "Chimp", data = data)
+f4_afr
+```
+
+The explicit argument names are not mandatory, but I personally _always_ use them. For the right order of arguments, check out `?f4` and other manual pages right from R.
+
+Note: there are 4 x 3 x 2 x 1 = 24 combinations of quartets of samples like this. Many of them are symmetrical and will yield exactly the same result, others will differ up to a sign. As an exercise, you can convince yourself of this by changing the positions of those four samples. Which quartets give the same results and why? Which differ only by a sign?
+
+In the literature, you often see a _D_ statistic. As a statistical test, these are basically interchangeable (and are actually calculated by the same internal machinery):
+
+Here is _D(Dinka, Yoruba; Neanderthal, Chimp)_:
+
+```{r}
+d_afr <- d(W = "Yoruba", X = "Dinka", Y = "Vindija", Z = "Chimp", data = data)
+d_afr
+```
+
+Now _f4(Dinka, French; Neanderthal, Chimp)_:
+
+```{r}
+f4_eur <- f4(W = "Yoruba", X = "French", Y = "Vindija", Z = "Chimp", data = data)
+f4_eur
+```
+
+We don't have to run the test for each population at a time, but we can give a vector of sample/population names as an input:
+
+```{r}
+test <- c("French", "Czech", "Han", "Papuan", "Mbuti", "Dinka")
+
+f4_multiple <- f4(W = "Yoruba", X = test, Y = "Vindija", Z = "Chimp", data = data)
+f4_multiple
+```
+
+When we plot the results, we immediately see a pattern:
+
+```{r}
+ggplot(f4_multiple, aes(fct_reorder(X, f4), f4, color = abs(Zscore) > 2)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = f4 - 2 * stderr, ymax = f4 + 2 * stderr)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  labs(title = "f4(Yoruba, X; Vindija Neanderthal, Chimp)", x = "")
 ```
 
 
-```{r}
-f4_result1 <- f4(
-  W = "Dinka", X = "Yoruba", Y = "Vindija", Z = "Chimp",
-  data = data
-)
 
-f4_result1
-```
-
-
-
-```{r}
-f4_result2 <- f4(
-  W = "Dinka", X = "French", Y = "Vindija", Z = "Chimp",
-  data = data
-)
-
-f4_result2
-```
-
-
-### Homebrew $f_4$ statistic (and _D_ statistic)
+### 2. Homebrew $f_4$ statistic (and _D_ statistic)
 
 ```{r}
 # subset to only four columns, for brevity
-gt <- geno[, c("Dinka", "Yoruba", "Vindija", "Chimp")]
+gt <- geno[, c("Yoruba", "Dinka", "Vindija", "Chimp")] %>% na.omit
 
 # detect two kinds of site patterns
-baba <- with(gt, Dinka == Vindija & Yoruba == Chimp & Vindija != Chimp)
-abba <- with(gt, Dinka == Chimp & Yoruba == Vindija & Vindija != Chimp)
+baba <- with(gt,    Yoruba == Vindija & Dinka == Chimp      & Vindija != Chimp)
+abba <- with(gt,    Yoruba == Chimp & Dinka == Vindija      & Vindija != Chimp)
 
 # count the two site patterns
 (total_baba <- sum(baba, na.rm = T))
 (total_abba <- sum(abba, na.rm = T))
+```
+
+$f_4$ statistic:
+
+```{r}
+(total_baba - total_abba) / nrow(gt)
 ```
 
 D statistic:
@@ -116,13 +177,92 @@ D statistic:
 (total_baba - total_abba) / (total_baba + total_abba)
 ```
 
-$f_4$ statistic:
-
-```{r}
-(total_baba - total_abba) / nrow(na.omit(gt))
-```
+We can compare these to the result of `f4_afr` and `d_afr`.
 
 Of course, this doesn't give us Z-scores (p-values) and so we can't determine significance (although we could easily add that too) but it servers as a useful demonstration that ADMIXTOOLS, $f$-statistics, _admixr_ and other tools are not black boxes built on high-level techniques. In the end, they all boil down to this kind of calculation.
 
+
+
+
+
+
 ## Demo #3 - $f_4$-ratio statistic
 
+To calculate admixture proportion, _admixr_ has a function called `f4ratio()`:
+
+```{r}
+neand_one <- f4ratio(X = "French", A = "Altai", B = "Vindija", C = "Dinka", O = "Chimp", data = data)
+
+neand_one
+```
+
+We can see that the proportion of Neanderthal ancestry in a French individual is about `r sprintf("%.1f", neand_one$alpha * 100)`% (the column `alpha` in the table above).
+Again, we can reproduce the same calculation "manually", by estimating the individual components ourselves and taking the ratio. This is obviously inefficient, but it's good to keep in mind that there's no magic behind the scenes:
+
+```{r}
+numerator <- f4(W = "Dinka", X = "French", Y = "Altai", Z = "Chimp", data = data)
+denominator <- f4(W = "Dinka", X = "Vindija", Y = "Altai", Z = "Chimp", data = data)
+
+numerator$f4 / denominator$f4
+```
+
+This is a method for estimating Neanderthal ancestry proportion sometimes called "direct $f_4$-ratio" based on [Petr _et al._ (2019)](https://www.pnas.org/content/116/5/1639). Note that the ordering of the populations in the quartet is slightly different from the definition of $f_4$-ratio statistic in the paper. I changed the order in this tutorial to make the calculation more similar to our simple examples of testing for the _presence_ of Neanderthal ancestry above.
+
+You can see for yourself that due to the symmetries of the four population quartets, we still get the same result even when we calculate the statistic using the order of the populations from the Petr _et al._ (2019) paper:
+
+```{r}
+x <- f4(W = "Altai", X = "Chimp", Y = "French", Z = "Dinka", data = data)
+y <- f4(W = "Altai", X = "Chimp", Y = "Vindija", Z = "Dinka", data = data)
+
+x$f4 / y$f4 # this is same as this ...
+numerator$f4 / denominator$f4 # ... from the previous example
+```
+
+The fact that many "different" $f_4$ and _D_-statistics mean actually the same thing sometimes make reading papers extremely difficult (for me) and frustrating. Everybody has a different preference and its good to keep this in mind.
+
+
+Let's be even more ambitions and perform this test on all present-day individuals in our data set.
+
+First, we will load the annotation table with individual names and population assignments:
+
+```{r}
+samples <- read_tsv("data/samples.tsv")
+```
+
+Now we can estimate the proportion of Neanderthal ancestry in all samples at once:
+
+```{r}
+neand_all <- f4ratio(X = samples$name, A = "Altai", B = "Vindija", C = "Dinka", O = "Chimp", data = data)
+
+neand_all
+```
+
+Let's combine the table of Neanderthal ancestry proportions with our annotation table of population assignments and radiocarbon ages:
+
+```{r}
+combined <- inner_join(neand_all, samples, by = c("X" = "name"))
+```
+
+What does the trajectory of Neanderthal ancestry in Europe over the last 40 thousand years look like?
+
+```{r}
+filter(combined, pop %in% c("EMH", "WestEurasia")) %>% # keep only relevant samples
+  ggplot(aes(age, alpha * 100)) +
+  geom_point() +
+  ylim(0, 5) + xlim(40000, 0) +
+  labs(title = "Trajectory of Neanderthal ancestry in Europe over time",
+       x = "years before present", y = "proportion of Neanderthal ancestry [%]") +
+  geom_smooth(method = "lm") # add a linear regression fit
+```
+
+Are there differences in the amounts of Neanderthal ancestry between present-day populaions?
+
+```{r}
+filter(combined, age == 0) %>%
+  ggplot(aes(fct_reorder(pop, alpha), alpha * 100, fill = pop)) +
+  geom_boxplot() +
+  geom_jitter() +
+  ylim(0, 5) +
+  labs(title = "Neanderthal ancestry in present-day populations",
+       x = "", y = "proportion of Neanderthal ancestry [%]")
+```
