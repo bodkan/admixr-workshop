@@ -113,7 +113,7 @@ modern_keep <- c(
 samples <- bind_rows(emhs, sgdp) %>%
   filter(name %in% c(emh_keep, modern_keep))
 
-write_tsv(samples, "samples.tsv")
+write_tsv(samples, "data/samples.tsv")
 ```
 
 ## Subset the gigantic EIGENSTRAT data to a managable size
