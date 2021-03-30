@@ -8,7 +8,7 @@ This document describes steps to process the gigantic EIGENSTRAT data combining 
 If you participated in this course, you don't need to concern yourselves with this. I used this to generated data for the _admixr_ demonstration and also to have something to share with you, in case you would like to test _admixr_ on your own.
 
 ```{r setup, include = F}
-knitr::opts_chunk$set(echo = T, eval = F)
+knitr::opts_chunk$set(echo = T, eval = T)
 ```
 
 ## Download full EIGENSTRAT data used in [Petr _et al._ (2019)](https://www.pnas.org/content/116/5/1639)
@@ -16,7 +16,8 @@ knitr::opts_chunk$set(echo = T, eval = F)
 This data is a combination of about 500 samples (ancient and present-day) used in a study by [Fu _et al._ (2016)](https://www.nature.com/articles/nature17993), as well as Vindija and Altai Neanderthal genomes I analyzed in my paper on selection against Neanderthal introgression.
 
 ```{bash}
-scp bionc04:/mnt/expressions/mp/nea-over-time/data/eigenstrat/bigyri_ho/all.{snp,ind,geno} .
+mkdir data/
+scp bionc04:/mnt/expressions/mp/nea-over-time/data/eigenstrat/bigyri_ho/all.{snp,ind,geno} data/
 ```
 
 ## Prepare a table of sample names, ages, and population assignment
@@ -105,13 +106,13 @@ for (s in colnames(new_geno)) {
                            2 * rbinom(sum(het_pos, na.rm = T), 1, 0.5)) %>% as.integer
 }
 
-write_geno(new_geno, "dataset.geno")
-write_ind(new_ind, "dataset.ind")
-file.copy(all_snps$snp, "dataset.snp")
+write_geno(new_geno, "data/snps.geno")
+write_ind(new_ind, "data/snps.ind")
+file.copy(all_snps$snp, "data/snps.snp")
 ```
 
 ## Clean up
 
 ```{bash}
-rm all.{geno,ind,snp}
+rm data/all.{geno,ind,snp}
 ```
