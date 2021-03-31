@@ -265,3 +265,33 @@ filter(combined, age == 0) %>%
   labs(title = "Neanderthal ancestry in present-day populations",
        x = "", y = "proportion of Neanderthal ancestry [%]")
 ```
+
+
+
+## Demo #4
+
+Manually prepared `par` file:
+
+```{bash}
+cat oldschool/config.par
+```
+
+Manually prepared `pop` file:
+
+```{bash}
+cat oldschool/config.pop
+```
+
+Run the `qpF4ratio` program from the command line and save the output to `result.txt`:
+
+```{bash}
+qpF4ratio -p oldschool/config.par > oldschool/result.txt
+```
+
+Inspect the result file:
+
+```{bash}
+cat oldschool/result.txt
+```
+
+You can see that the program estimated the same proportion of Neanderthal ancestry in the French individual as the one we got out of the `f4ratio()` function above using _admixr_. This is not surprising because that function performs all the steps we did manually here for us, automatically. This saves us a lot of work and avoids many potential bugs, and allows us to focus on what's really important.

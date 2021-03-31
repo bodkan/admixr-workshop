@@ -1,0 +1,4 @@
+genotypename: data/snps.geno
+snpname: data/snps.snp
+indivname: data/snps.ind
+popfilename: oldschool/config.pop

@@ -472,3 +472,65 @@ filter(combined, age == 0) %>%
     ## Warning: Removed 3 rows containing missing values (geom_point).
 
 ![](demo_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+
+## Demo \#4
+
+Manually prepared `par` file:
+
+``` bash
+cat oldschool/config.par
+```
+
+    ## genotypename: data/snps.geno
+    ## snpname: data/snps.snp
+    ## indivname: data/snps.ind
+    ## popfilename: oldschool/config.pop
+
+Manually prepared `pop` file:
+
+``` bash
+cat oldschool/config.pop
+```
+
+    ## Altai Chimp : French Yoruba :: Altai Chimp : Vindija Yoruba
+
+Run the `qpF4ratio` program from the command line and save the output to
+`result.txt`:
+
+``` bash
+qpF4ratio -p oldschool/config.par > oldschool/result.txt
+```
+
+Inspect the result file:
+
+``` bash
+cat oldschool/result.txt
+```
+
+    ## qpF4ratio: parameter file: oldschool/config.par
+    ## ### THE INPUT PARAMETERS
+    ## ##PARAMETER NAME: VALUE
+    ## genotypename: data/snps.geno
+    ## snpname: data/snps.snp
+    ## indivname: data/snps.ind
+    ## popfilename: oldschool/config.pop
+    ## ## qpF4ratio version: 400
+    ## nplist: 1
+    ##   0                Altai    1
+    ##   1                Chimp    1
+    ##   2               French    1
+    ##   3               Yoruba    1
+    ##   4              Vindija    1
+    ## jackknife block size:     0.050
+    ## snps: 2055942  indivs: 5
+    ## number of blocks for block jackknife: 557
+    ##                                                                                                            alpha     std. err  Z (null=0)
+    ##  result:      Altai      Chimp     French     Yoruba  :      Altai      Chimp    Vindija     Yoruba     0.018608     0.004097      4.542   1930573
+    ## ## end of run
+
+You can see that the program estimated the same proportion of
+Neanderthal ancestry in the French individual as the one we got out of
+the `f4ratio()` function above using *admixr*. This is not surprising
+because that function performs all the steps we did manually here for
+us, automatically. This saves us a lot of work and avoids many potential
+bugs, and allows us to focus on what’s really important.
