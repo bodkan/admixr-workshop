@@ -37,7 +37,7 @@ almost everything that ADMIXTOOLS (I would even say 100% of things an
 average popgen paper needs) using a set of simple R functions, *entirely
 from within R*. No shell scripting, no manual editing of files and
 copy-pasting results from the terminal elsewhere for further processing
-and plotting…
+and plotting… Demo \#4 shows what this means in practice.
 
 2.  What is the required file format?
 
@@ -165,20 +165,20 @@ heterozygous position). In other cases, allele types 0, 1, and 2 would
 be present.
 
 ``` r
-table(geno$I0876) # Kostenki-14
+table(geno$I0876, useNA = "always") # Kostenki-14
 ```
 
     ## 
-    ##       0       2 
-    ##  461818 1285547
+    ##       0       2    <NA> 
+    ##  461818 1285547  397137
 
 ``` r
-table(geno$Vindija)
+table(geno$Vindija, useNA = "always")
 ```
 
     ## 
-    ##       0       2 
-    ##  597504 1361792
+    ##       0       2    <NA> 
+    ##  597504 1361792  185206
 
 Note: in case you want to generate your own EIGENSTRAT data (from VCF
 files, etc.) or if you want to somehow process or filter data you
@@ -194,7 +194,10 @@ useful.
 
 ### 1. *f*<sub>4</sub> and *D* statistics using *admixr*
 
-Let’s first test *f4(Dinka, Yoruba; Neanderthal, Chimp)*:
+Let’s first test *f4(Dinka, Yoruba; Neanderthal, Chimp)*. The explicit
+argument names in the function call below are not mandatory, but I
+personally *always* use them. For the right order of arguments, check
+out `?f4` and other manual pages right from R.
 
 ``` r
 f4_afr <- f4(W = "Yoruba", X = "Dinka", Y = "Vindija", Z = "Chimp", data = data)
@@ -205,10 +208,6 @@ f4_afr
     ##   W      X     Y       Z           f4   stderr Zscore  BABA  ABBA   nsnps
     ##   <chr>  <chr> <chr>   <chr>    <dbl>    <dbl>  <dbl> <dbl> <dbl>   <dbl>
     ## 1 Yoruba Dinka Vindija Chimp 0.000422 0.000283   1.49 56947 56147 1897864
-
-The explicit argument names are not mandatory, but I personally *always*
-use them. For the right order of arguments, check out `?f4` and other
-manual pages right from R.
 
 Note: there are 4 x 3 x 2 x 1 = 24 combinations of quartets of samples
 like this. Many of them are symmetrical and will yield exactly the same
@@ -288,13 +287,13 @@ baba <- with(gt,    Yoruba == Vindija & Dinka == Chimp      & Vindija != Chimp)
 abba <- with(gt,    Yoruba == Chimp & Dinka == Vindija      & Vindija != Chimp)
 
 # count the two site patterns
-(total_baba <- sum(baba, na.rm = T))
+(total_baba <- sum(baba))
 ```
 
     ## [1] 56947
 
 ``` r
-(total_abba <- sum(abba, na.rm = T))
+(total_abba <- sum(abba))
 ```
 
     ## [1] 56147
@@ -302,7 +301,7 @@ abba <- with(gt,    Yoruba == Chimp & Dinka == Vindija      & Vindija != Chimp)
 *f*<sub>4</sub> statistic:
 
 ``` r
-(total_baba - total_abba) / nrow(gt)
+((total_baba - total_abba) / nrow(gt)) # f4
 ```
 
     ## [1] 0.0004215265
@@ -310,7 +309,7 @@ abba <- with(gt,    Yoruba == Chimp & Dinka == Vindija      & Vindija != Chimp)
 D statistic:
 
 ``` r
-(total_baba - total_abba) / (total_baba + total_abba)
+((total_baba - total_abba) / (total_baba + total_abba)) # D
 ```
 
     ## [1] 0.007073762
@@ -329,7 +328,11 @@ To calculate admixture proportion, *admixr* has a function called
 `f4ratio()`:
 
 ``` r
-neand_one <- f4ratio(X = "French", A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp", data = data)
+neand_one <- f4ratio(
+  X = "French",
+  A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp",
+  data = data
+)
 
 neand_one
 ```
@@ -389,6 +392,8 @@ actually the same thing sometimes make reading papers extremely
 difficult (for me) and frustrating. Everybody has a different preference
 and its good to keep this in mind.
 
+### Estimating ancestry in multiple samples at once
+
 Let’s be even more ambitions and perform this test on all present-day
 individuals in our data set.
 
@@ -411,7 +416,11 @@ Now we can estimate the proportion of Neanderthal ancestry in all
 samples at once:
 
 ``` r
-neand_all <- f4ratio(X = samples$name, A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp", data = data)
+neand_all <- f4ratio(
+  X = samples$name,
+  A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp",
+  data = data
+)
 neand_all
 ```
 
@@ -444,6 +453,7 @@ What does the trajectory of Neanderthal ancestry in Europe over the last
 filter(combined, pop %in% c("EMH", "WestEurasia")) %>% # keep only relevant samples
   ggplot(aes(age, alpha * 100)) +
   geom_point() +
+  geom_errorbar(aes(ymin = 100 * alpha - 100 * stderr, ymax = 100 * alpha + 100 * stderr)) +
   ylim(0, 5) + xlim(48000, 0) +
   labs(title = "Trajectory of Neanderthal ancestry in Europe over time",
        x = "years before present", y = "proportion of Neanderthal ancestry [%]") +
@@ -462,14 +472,10 @@ filter(combined, age == 0) %>%
   ggplot(aes(fct_reorder(pop, alpha), alpha * 100, fill = pop)) +
   geom_boxplot() +
   geom_jitter() +
-  ylim(0, 5) +
+  coord_cartesian(ylim = c(0, 5)) +
   labs(title = "Neanderthal ancestry in present-day populations",
        x = "", y = "proportion of Neanderthal ancestry [%]")
 ```
-
-    ## Warning: Removed 2 rows containing non-finite values (stat_boxplot).
-
-    ## Warning: Removed 3 rows containing missing values (geom_point).
 
 ![](demo_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 

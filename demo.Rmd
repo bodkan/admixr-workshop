@@ -35,7 +35,7 @@ Let's get the technicalities out of the way first:
 
 1. What does the _admixr_ R package actually do compared to ADMIXTOOLS?
 
-See the [tutorial](https://bodkan.net/admixr/articles/tutorial.html) for a lengthy discussion on this topic. Briefly, it makes it possible to do almost everything that ADMIXTOOLS (I would even say 100% of things an average popgen paper needs) using a set of simple R functions, _entirely from within R_. No shell scripting, no manual editing of files and copy-pasting results from the terminal elsewhere for further processing and plotting...
+See the [tutorial](https://bodkan.net/admixr/articles/tutorial.html) for a lengthy discussion on this topic. Briefly, it makes it possible to do almost everything that ADMIXTOOLS (I would even say 100% of things an average popgen paper needs) using a set of simple R functions, _entirely from within R_. No shell scripting, no manual editing of files and copy-pasting results from the terminal elsewhere for further processing and plotting... Demo #4 shows what this means in practice.
 
 2. What is the required file format?
 
@@ -82,11 +82,13 @@ We can see that the only genotypes present are reference and alternative homozyg
 There are no heterozygous sites in our demo data because all genomes have been pseudo-haplodized (a random allele was drawn at each heterozygous position). In other cases, allele types 0, 1, and 2 would be present.
 
 ```{r}
-table(geno$I0876) # Kostenki-14
-table(geno$Vindija)
+table(geno$I0876, useNA = "always") # Kostenki-14
+table(geno$Vindija, useNA = "always")
 ```
 
 Note: in case you want to generate your own EIGENSTRAT data (from VCF files, etc.) or if you want to somehow process or filter data you already have, functions `write_snp/write_ind/write_geno` can be very useful.
+
+
 
 
 
@@ -102,14 +104,12 @@ Note: in case you want to generate your own EIGENSTRAT data (from VCF files, etc
 
 ### 1. $f_4$ and _D_ statistics using _admixr_
 
-Let's first test _f4(Dinka, Yoruba; Neanderthal, Chimp)_:
+Let's first test _f4(Dinka, Yoruba; Neanderthal, Chimp)_.  The explicit argument names in the function call below are not mandatory, but I personally _always_ use them. For the right order of arguments, check out `?f4` and other manual pages right from R.
 
 ```{r}
 f4_afr <- f4(W = "Yoruba", X = "Dinka", Y = "Vindija", Z = "Chimp", data = data)
 f4_afr
 ```
-
-The explicit argument names are not mandatory, but I personally _always_ use them. For the right order of arguments, check out `?f4` and other manual pages right from R.
 
 Note: there are 4 x 3 x 2 x 1 = 24 combinations of quartets of samples like this. Many of them are symmetrical and will yield exactly the same result, others will differ up to a sign. As an exercise, you can convince yourself of this by changing the positions of those four samples. Which quartets give the same results and why? Which differ only by a sign?
 
@@ -161,20 +161,20 @@ baba <- with(gt,    Yoruba == Vindija & Dinka == Chimp      & Vindija != Chimp)
 abba <- with(gt,    Yoruba == Chimp & Dinka == Vindija      & Vindija != Chimp)
 
 # count the two site patterns
-(total_baba <- sum(baba, na.rm = T))
-(total_abba <- sum(abba, na.rm = T))
+(total_baba <- sum(baba))
+(total_abba <- sum(abba))
 ```
 
 $f_4$ statistic:
 
 ```{r}
-(total_baba - total_abba) / nrow(gt)
+((total_baba - total_abba) / nrow(gt)) # f4
 ```
 
 D statistic:
 
 ```{r}
-(total_baba - total_abba) / (total_baba + total_abba)
+((total_baba - total_abba) / (total_baba + total_abba)) # D
 ```
 
 We can compare these to the result of `f4_afr` and `d_afr`.
@@ -191,7 +191,11 @@ Of course, this doesn't give us Z-scores (p-values) and so we can't determine si
 To calculate admixture proportion, _admixr_ has a function called `f4ratio()`:
 
 ```{r}
-neand_one <- f4ratio(X = "French", A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp", data = data)
+neand_one <- f4ratio(
+  X = "French",
+  A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp",
+  data = data
+)
 
 neand_one
 ```
@@ -221,6 +225,8 @@ numerator$f4 / denominator$f4 # ... from the previous example
 The fact that many "different" $f_4$ and _D_-statistics mean actually the same thing sometimes make reading papers extremely difficult (for me) and frustrating. Everybody has a different preference and its good to keep this in mind.
 
 
+### Estimating ancestry in multiple samples at once
+
 Let's be even more ambitions and perform this test on all present-day individuals in our data set.
 
 First, we will load the annotation table with individual names and population assignments:
@@ -232,7 +238,11 @@ samples <- read_tsv("data/samples.tsv")
 Now we can estimate the proportion of Neanderthal ancestry in all samples at once:
 
 ```{r}
-neand_all <- f4ratio(X = samples$name, A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp", data = data)
+neand_all <- f4ratio(
+  X = samples$name,
+  A = "Altai", B = "Vindija", C = "Yoruba", O = "Chimp",
+  data = data
+)
 neand_all
 ```
 
@@ -248,6 +258,7 @@ What does the trajectory of Neanderthal ancestry in Europe over the last ~50 tho
 filter(combined, pop %in% c("EMH", "WestEurasia")) %>% # keep only relevant samples
   ggplot(aes(age, alpha * 100)) +
   geom_point() +
+  geom_errorbar(aes(ymin = 100 * alpha - 100 * stderr, ymax = 100 * alpha + 100 * stderr)) +
   ylim(0, 5) + xlim(48000, 0) +
   labs(title = "Trajectory of Neanderthal ancestry in Europe over time",
        x = "years before present", y = "proportion of Neanderthal ancestry [%]") +
@@ -261,10 +272,12 @@ filter(combined, age == 0) %>%
   ggplot(aes(fct_reorder(pop, alpha), alpha * 100, fill = pop)) +
   geom_boxplot() +
   geom_jitter() +
-  ylim(0, 5) +
+  coord_cartesian(ylim = c(0, 5)) +
   labs(title = "Neanderthal ancestry in present-day populations",
        x = "", y = "proportion of Neanderthal ancestry [%]")
 ```
+
+
 
 
 
